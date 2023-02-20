@@ -17,49 +17,45 @@ struct ContentView: View {
     
     private var contentView: some View {
         VStack(spacing: 0, content: {
-            ///bugs of List when use scroll proxy: https://developer.apple.com/forums/thread/712510
-            ///for now: convert to lazyVStack (poor performance)
-            ScrollViewReader { proxy in
-                ZStack {
-                    TPMessageListView(scrollProxy: proxy)
-                    VStack {
-                        Spacer()
-                        
-                        if isShowError {
-                            Text("Sorry, an error ocurred. Please try again.")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color.red)
-                                .shadow(color: Color.gray.opacity(0.5), radius: 4)
-                                .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .bottom)))
-                        }
+            ZStack {
+                TPMessageListView()
+                
+                VStack {
+                    Spacer()
+                    
+                    if isShowError {
+                        Text("Sorry, an error ocurred. Please try again.")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .background(Color.red)
+                            .shadow(color: Color.gray.opacity(0.5), radius: 4)
+                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .bottom)))
                     }
-                    .onReceive(gptManager.$streamState) { newValue in
-                        withAnimation {
-                            switch newValue {
-                            case .done(let e):
-                                let isError = e != nil
-                                if isError != isShowError {
-                                    isShowError = isError
-                                }
-                            default:
-                                if isShowError != false {
-                                    isShowError = false
-                                }
+                }
+                .onReceive(gptManager.$streamState) { newValue in
+                    withAnimation {
+                        switch newValue {
+                        case .done(let e):
+                            let isError = e != nil
+                            if isError != isShowError {
+                                isShowError = isError
+                            }
+                        default:
+                            if isShowError != false {
+                                isShowError = false
                             }
                         }
-                        
-                        if isShowError {
-                            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
-                                withAnimation {
-                                    isShowError.toggle()
-                                }
+                    }
+                    
+                    if isShowError {
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
+                            withAnimation {
+                                isShowError.toggle()
                             }
                         }
                     }
                 }
             }
-            
             
             ///Why move textfield to outside?
             ///https://developer.apple.com/forums/thread/120710
@@ -87,7 +83,7 @@ struct ContentView: View {
         }
         #else
         contentView
-            .frame(minWidth: 300, minHeight: 400)
+            .frame(minWidth: 600, minHeight: 600)
         #endif
     }
     

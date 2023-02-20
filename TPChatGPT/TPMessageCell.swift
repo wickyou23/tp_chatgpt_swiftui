@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import Highlightr
 
-struct MessageCell: View {
+struct TPMessageCell: View {
     @State private var cachingContentSize: CGSize?
     @ObservedObject private var vm: TPMessageCellViewModel
     
@@ -84,8 +84,8 @@ struct MessageCell: View {
     
 }
 
-struct MessageCell_Previews: PreviewProvider {
+struct TPMessageCell_Previews: PreviewProvider {
     static var previews: some View {
-        MessageCell(messageViewModel: TPMessageCellViewModel(message: TPMessage(data: TPUserMessage(text: "This is a code ````let a = 42````", created: Date.now))))
+        TPMessageCell(messageViewModel: TPMessageCellViewModel(message: TPMessage(data: TPUserMessage(text: "This is a code ````let a = 42````", created: Date.now))))
     }
 }

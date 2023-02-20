@@ -10,16 +10,16 @@ import Combine
 import SwiftUI
 
 class TPMessageCellViewModel: NSObject, ObservableObject {
-    @Published private(set) var messageDatas: [MessageCellData] = []
+    @Published private(set) var messageDatas: [TPMessageCellData] = []
     
     private let gptManager = TPGPTManager.shared
     private(set) var message: TPMessage
     private var currentMessage: String = ""
     private let handleMessageOperationQueue = TPMessageHandlerOperationQueue()
-    private var subscriptions: [AnyCancellable?] = []
+    private var subscriptions = Set<AnyCancellable>()
     
     private(set) var isRendered = false
-    private var cachingRenderedMessages: [MessageCellData] = []
+    private var cachingRenderedMessages: [TPMessageCellData] = []
     
     deinit {
         debugPrint("TPMessageCellViewModel deinit ===")
@@ -28,40 +28,43 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
     init(message: TPMessage) {
         self.message = message
         super.init()
-        subscriptions.append(self.message.data.textPublisher.sink {
+        self.message.data.textPublisher.sink {
             [weak self] newValue in
             self?.handleMessage(newTextMessage: newValue)
-        })
+        }.store(in: &subscriptions)
         
         handleMessageOperationQueue.finishedAllOperations = {
             [weak self] in
             guard let self = self else { return }
-
-            debugPrint("handleMessageOperationQueue \(self.gptManager.streamState)")
+            
             guard self.gptManager.streamState.isDone else {
                 self.isRendered = false
                 return
             }
-
+            
+            debugPrint("handleMessageOperationQueue \(self.gptManager.streamState)")
             self.isRendered = true
-            self.subscriptions.forEach({ $0?.cancel() })
-            self.subscriptions = []
+            self.subscriptions.forEach({ $0.cancel() })
+            self.subscriptions.removeAll()
         }
         
-        subscriptions.append(gptManager.$streamState.sink {
+        gptManager.$streamState.sink {
             [weak self] newValue in
             guard let self = self else { return }
-            debugPrint("[gptManager.$streamState]: \(newValue.isDone) \(self.handleMessageOperationQueue.isFinished)")
-            if newValue.isDone && self.handleMessageOperationQueue.isFinished {
-                self.isRendered = true
-                self.subscriptions.forEach({ $0?.cancel() })
-                self.subscriptions = []
+            guard newValue.isDone && self.handleMessageOperationQueue.isFinished else {
+                return
             }
-        })
+            
+            debugPrint("[gptManager.$streamState]: \(newValue.isDone) \(self.handleMessageOperationQueue.isFinished)")
+            self.isRendered = true
+            self.subscriptions.forEach({ $0.cancel() })
+            self.subscriptions.removeAll()
+        }
+        .store(in: &subscriptions)
     }
     
     private func handleMessage(newTextMessage: String) {
-//        debugPrint("handleMessage [MESSAGE][\(newTextMessage.count)]: \(newTextMessage)")
+        //        debugPrint("handleMessage [MESSAGE][\(newTextMessage.count)]: \(newTextMessage)")
         guard currentMessage != newTextMessage else {
             debugPrint("currentMessage and newTextMessage is the same")
             self.isRendered = true
@@ -77,7 +80,7 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
     }
     
     private func _handleMessage(textMessage: String) {
-//        debugPrint("_handleMessage [MESSAGE][\(textMessage.count)]: \(textMessage)")
+        //        debugPrint("_handleMessage [MESSAGE][\(textMessage.count)]: \(textMessage)")
         
         var newMessageDatas = Array(cachingRenderedMessages)
         let nsmessage = NSString(string: textMessage)
@@ -93,25 +96,25 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
         if last4 == "````" {
             if newMessageDatas.isEmpty {
                 debugPrint("[LAST 4][EMPTY]: \(last4)")
-                newMessageDatas.append(MessageCellData(message: "",
-                                                       type: .code,
-                                                       startAt: nsmessage.length,
-                                                       endAt: nsmessage.length))
+                newMessageDatas.append(TPMessageCellData(message: "",
+                                                         type: .code,
+                                                         startAt: nsmessage.length,
+                                                         endAt: nsmessage.length))
             }
             else {
                 let lastData = newMessageDatas.last!
                 debugPrint("[LAST 4][NOEMPTY][\(lastData.type)][\(lastData.message)]: \(last4)")
                 if lastData.type == .plainText {
-                    newMessageDatas.append(MessageCellData(message: "",
-                                                           type: .code,
-                                                           startAt: nsmessage.length,
-                                                           endAt: nsmessage.length))
+                    newMessageDatas.append(TPMessageCellData(message: "",
+                                                             type: .code,
+                                                             startAt: nsmessage.length,
+                                                             endAt: nsmessage.length))
                 }
                 else {
-                    newMessageDatas.append(MessageCellData(message: "",
-                                                           type: .plainText,
-                                                           startAt: nsmessage.length,
-                                                           endAt: nsmessage.length))
+                    newMessageDatas.append(TPMessageCellData(message: "",
+                                                             type: .plainText,
+                                                             startAt: nsmessage.length,
+                                                             endAt: nsmessage.length))
                 }
             }
         }
@@ -121,10 +124,10 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
                     return
                 }
                 
-                newMessageDatas.append(MessageCellData(message: String(nsmessage),
-                                                       type: .plainText,
-                                                       startAt: 0,
-                                                       endAt: nsmessage.length))
+                newMessageDatas.append(TPMessageCellData(message: String(nsmessage),
+                                                         type: .plainText,
+                                                         startAt: 0,
+                                                         endAt: nsmessage.length))
             }
             else {
                 var lastData = newMessageDatas.removeLast()
@@ -137,10 +140,10 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
                     moreMsg += nextMessage
                 }
                 
-                lastData = MessageCellData(message: moreMsg,
-                                           type: lastData.type,
-                                           startAt: lastData.startAt,
-                                           endAt: nsmessage.length)
+                lastData = TPMessageCellData(message: moreMsg,
+                                             type: lastData.type,
+                                             startAt: lastData.startAt,
+                                             endAt: nsmessage.length)
                 newMessageDatas.append(lastData)
             }
         }
@@ -153,20 +156,20 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
     }
 }
 
-enum MessageCellDataType {
+enum TPMessageCellDataType {
     case plainText, code
 }
 
-struct MessageCellData: Identifiable {
+struct TPMessageCellData: Identifiable {
     let id: String = UUID().uuidString
     let message: String
-    let type: MessageCellDataType
+    let type: TPMessageCellDataType
     let startAt: Int
     let endAt: Int
     
     private var highlightrMessage: AttributedString?
     
-    init(message: String, type: MessageCellDataType, startAt: Int, endAt: Int) {
+    init(message: String, type: TPMessageCellDataType, startAt: Int, endAt: Int) {
         self.message = message
         self.type = type
         self.startAt = startAt

@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-private let API_KEY = "Bearer <API KEY HERE>"
+private let API_KEY = "Bearer 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"
 private let DEFAULT_HEADER = ["Content-Type": "application/json", "Authorization": API_KEY]
 
 enum TPGPTManagerState {
