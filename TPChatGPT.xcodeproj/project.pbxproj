@@ -16,6 +16,10 @@
 		A7168B8A2992314D008DFD9C /* TPMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7168B892992314D008DFD9C /* TPMessageCell.swift */; };
 		A7168B8E2994A19A008DFD9C /* TPGPTHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7168B8D2994A19A008DFD9C /* TPGPTHelper.swift */; };
 		A7168B942994D23E008DFD9C /* TPGPTLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7168B932994D23E008DFD9C /* TPGPTLoading.swift */; };
+		A76C6332299B369A00ED59F2 /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = A76C6331299B369A00ED59F2 /* Highlightr */; };
+		A78DE162299F3B7200B968A2 /* TPMessageInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78DE161299F3B7200B968A2 /* TPMessageInputView.swift */; };
+		A78DE164299F5C4F00B968A2 /* TPMessageCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78DE163299F5C4F00B968A2 /* TPMessageCellViewModel.swift */; };
+		A78DE166299F880100B968A2 /* TPMessageListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78DE165299F880100B968A2 /* TPMessageListView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +34,10 @@
 		A7168B892992314D008DFD9C /* TPMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TPMessageCell.swift; sourceTree = "<group>"; };
 		A7168B8D2994A19A008DFD9C /* TPGPTHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TPGPTHelper.swift; sourceTree = "<group>"; };
 		A7168B932994D23E008DFD9C /* TPGPTLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TPGPTLoading.swift; sourceTree = "<group>"; };
+		A78DE161299F3B7200B968A2 /* TPMessageInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TPMessageInputView.swift; sourceTree = "<group>"; };
+		A78DE163299F5C4F00B968A2 /* TPMessageCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TPMessageCellViewModel.swift; sourceTree = "<group>"; };
+		A78DE165299F880100B968A2 /* TPMessageListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TPMessageListView.swift; sourceTree = "<group>"; };
+		A7A44DF4299C85EB00476192 /* Highlightr */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Highlightr; path = TPChatGPT/Packages/Highlightr; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A76C6332299B369A00ED59F2 /* Highlightr in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +55,7 @@
 		A7168B6629920378008DFD9C = {
 			isa = PBXGroup;
 			children = (
+				A7A44DF3299C85EB00476192 /* Packages */,
 				A7168B7129920378008DFD9C /* TPChatGPT */,
 				A7168B7029920378008DFD9C /* Products */,
 			);
@@ -67,7 +77,10 @@
 				A7168B8329920EA0008DFD9C /* TPGPTManager.swift */,
 				A7168B932994D23E008DFD9C /* TPGPTLoading.swift */,
 				A7168B8529920EEB008DFD9C /* TPMessage.swift */,
+				A78DE165299F880100B968A2 /* TPMessageListView.swift */,
 				A7168B892992314D008DFD9C /* TPMessageCell.swift */,
+				A78DE163299F5C4F00B968A2 /* TPMessageCellViewModel.swift */,
+				A78DE161299F3B7200B968A2 /* TPMessageInputView.swift */,
 				A7168B7429920378008DFD9C /* ContentView.swift */,
 				A7168B7629920379008DFD9C /* Assets.xcassets */,
 				A7168B7829920379008DFD9C /* TPChatGPT.entitlements */,
@@ -82,6 +95,14 @@
 				A7168B7A29920379008DFD9C /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		A7A44DF3299C85EB00476192 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				A7A44DF4299C85EB00476192 /* Highlightr */,
+			);
+			name = Packages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,6 +121,9 @@
 			dependencies = (
 			);
 			name = TPChatGPT;
+			packageProductDependencies = (
+				A76C6331299B369A00ED59F2 /* Highlightr */,
+			);
 			productName = TPChatGPT;
 			productReference = A7168B6F29920378008DFD9C /* TPChatGPT.app */;
 			productType = "com.apple.product-type.application";
@@ -128,6 +152,8 @@
 				Base,
 			);
 			mainGroup = A7168B6629920378008DFD9C;
+			packageReferences = (
+			);
 			productRefGroup = A7168B7029920378008DFD9C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -154,13 +180,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A78DE166299F880100B968A2 /* TPMessageListView.swift in Sources */,
 				A7168B8429920EA0008DFD9C /* TPGPTManager.swift in Sources */,
 				A7168B8E2994A19A008DFD9C /* TPGPTHelper.swift in Sources */,
+				A78DE164299F5C4F00B968A2 /* TPMessageCellViewModel.swift in Sources */,
 				A7168B8A2992314D008DFD9C /* TPMessageCell.swift in Sources */,
 				A7168B8629920EEB008DFD9C /* TPMessage.swift in Sources */,
 				A7168B7529920378008DFD9C /* ContentView.swift in Sources */,
 				A7168B942994D23E008DFD9C /* TPGPTLoading.swift in Sources */,
 				A7168B7329920378008DFD9C /* TPGPTApp.swift in Sources */,
+				A78DE162299F3B7200B968A2 /* TPMessageInputView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +403,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A76C6331299B369A00ED59F2 /* Highlightr */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Highlightr;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A7168B6729920378008DFD9C /* Project object */;
 }

@@ -10,14 +10,10 @@ import Combine
 
 struct ContentView: View {
     @EnvironmentObject private var gptManager: TPGPTManager
-    @State private var inputTextField: String = ""
     @State private var scrollProxy: ScrollViewProxy? = nil
     @State private var isShowError = false
-    @FocusState private var focusTextField: Bool
     
     private let spacerId = "spacer_id"
-    
-    
     
     private var contentView: some View {
         VStack(spacing: 0, content: {
@@ -25,42 +21,7 @@ struct ContentView: View {
             ///for now: convert to lazyVStack (poor performance)
             ScrollViewReader { proxy in
                 ZStack {
-                    ScrollView {
-                        LazyVStack {
-                            Spacer()
-                                .frame(height: 16)
-                            
-                            ForEach(gptManager.messages, id: \.id) { message in
-                                MessageCell(message: message, contentHeightChangedAction: { size in
-                                    scrollToBottom()
-                                })
-                                #if os(iOS)
-                                .listRowSeparator(.hidden)
-                                #endif
-                                .id(message.id)
-                            }
-                            .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-                            .onAppear {
-                                scrollProxy = proxy
-                            }
-                            
-                            Spacer()
-                                .frame(height: 16)
-                                .id(spacerId)
-                        }
-                        .onChange(of: gptManager.messages) { newValue in
-                            scrollToBottom()
-                        }
-                    }
-                    .background(Color(hex: 0xfefefe))
-                    .listStyle(.plain)
-                    #if os(iOS)
-                    .scrollDismissesKeyboard(.interactively)
-                    #endif
-                    .onTapGesture {
-                        focusTextField = false
-                    }
-                    
+                    TPMessageListView(scrollProxy: proxy)
                     VStack {
                         Spacer()
                         
@@ -77,9 +38,14 @@ struct ContentView: View {
                         withAnimation {
                             switch newValue {
                             case .done(let e):
-                                isShowError = e != nil
+                                let isError = e != nil
+                                if isError != isShowError {
+                                    isShowError = isError
+                                }
                             default:
-                                isShowError = false
+                                if isShowError != false {
+                                    isShowError = false
+                                }
                             }
                         }
                         
@@ -94,38 +60,10 @@ struct ContentView: View {
                 }
             }
             
-            HStack(alignment: .center, content: {
-                TextField("Type a question?", text: $inputTextField)
-                    #if os(iOS)
-                    .keyboardType(.default)
-                    #endif
-                    .focused($focusTextField)
-                    #if os(macOS)
-                    .textFieldStyle(.roundedBorder)
-                    .keyboardShortcut(.defaultAction)
-                    .onSubmit {
-                        sendButton()
-                    }
-                    #endif
-                
-                if (!gptManager.streamState.isDone) {
-                    TPGPTLoading()
-                }
-                else {
-                    Button {
-                        sendButton()
-                    } label: {
-                        Image(systemName: "paperplane.fill")
-                            #if os(iOS)
-                            .font(.system(size: 20))
-                            #endif
-                            .foregroundColor(.blue)
-                    }
-                }
-            })
-            .padding()
-            .background(Color(hex: 0xfafafa))
-            .shadow(color: Color.gray.opacity(0.5), radius: 4)
+            
+            ///Why move textfield to outside?
+            ///https://developer.apple.com/forums/thread/120710
+            TPMessageInputView()
         })
         .navigationTitle("GPT-3")
         #if os(iOS)
@@ -133,6 +71,8 @@ struct ContentView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         #endif
     }
+    
+    @State private var source = "let a = 42\n"
     
     var body: some View {
         #if os(iOS)
@@ -147,14 +87,8 @@ struct ContentView: View {
         }
         #else
         contentView
-            .frame(minWidth: 600, minHeight: 400)
+            .frame(minWidth: 300, minHeight: 400)
         #endif
-    }
-    
-    func sendButton() {
-        guard !inputTextField.isEmpty else { return }
-        gptManager.addStreamUserMessage(message: TPUserMessage(text: inputTextField, created: Date.now))
-        inputTextField = ""
     }
     
     func sendButtonDump() {

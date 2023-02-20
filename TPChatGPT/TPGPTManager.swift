@@ -36,6 +36,8 @@ enum TPGPTManagerState {
 }
 
 class TPGPTManager: NSObject, ObservableObject {
+    static let shared = TPGPTManager()
+    
     @Published var streamState: TPGPTManagerState = .done(nil)
     @Published var messages: [TPMessage] = []
     @Published var dumpMessages: [TPMessage] = [
@@ -61,7 +63,8 @@ class TPGPTManager: NSObject, ObservableObject {
     
     func addStreamUserMessage(message: TPUserMessage) {
         messages.append(TPMessage(data: message))
-        sendStreamMessageToGPT(prompt: message.text)
+        let modifyMsg = message.text
+        sendStreamMessageToGPT(prompt: modifyMsg)
     }
     
     func addUserMessageDump(message: TPUserMessage) {
@@ -72,10 +75,11 @@ class TPGPTManager: NSObject, ObservableObject {
         let bodyJS: [String: Any] = [
             "model": "text-davinci-003",
             "prompt": prompt,
-            "temperature": 0.5,
+            "temperature": 0.7,
             "max_tokens": 2048,
             "stop": ["\n\n\n"],
-            "stream": true
+            "stream": true,
+            "suffix": "Note: if your answer has a snip code, let's put it in \"````\""
         ]
         
         guard let dataJS = try? JSONSerialization.data(withJSONObject: bodyJS) else {
@@ -100,6 +104,14 @@ extension TPGPTManager: URLSessionDataDelegate {
             }
         }
         
+        if let error = dataTask.error {
+            print("[ERROR]: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.streamState = .done(NSError(domain: "[ERROR]: \(error.localizedDescription)", code: -1))
+            }
+            return
+        }
+        
         guard var str = String(data: data, encoding: .utf8) else {
             print("[ERROR]: cannot convert stream data to string")
             DispatchQueue.main.async {
@@ -117,11 +129,12 @@ extension TPGPTManager: URLSessionDataDelegate {
                 continue
             }
             
-//            print("[RAW] \(str)")
             if str == "[DONE]" {
                 DispatchQueue.main.async {
+                    debugPrint("Stream message [DONE] ==========")
                     self.streamState = .done(nil)
                 }
+                
                 return
             }
             
@@ -147,6 +160,7 @@ extension TPGPTManager: URLSessionDataDelegate {
             }
         }
         
+//        print("[CHUNK] \(newestChunkMsg)")
         guard let newestGPTMessage = newestGPTMessage else {
             DispatchQueue.main.async {
                 self.streamState = .done(NSError(domain: "[ERROR]: Unknown error", code: -1))
@@ -163,14 +177,12 @@ extension TPGPTManager: URLSessionDataDelegate {
                 return
             }
 
-            let newText = preGPTMsg.text + newestChunkMsg
-            DispatchQueue.main.async {
-                preGPTMsg.updateNewText(newText: newText)
-            }
+            let newText = preGPTMsg.choice!.text + newestChunkMsg
+            preGPTMsg.updateNewText(newText: newText)
         }
         else {
+            newestGPTMessage.updateNewText(newText: newestChunkMsg)
             DispatchQueue.main.async {
-                newestGPTMessage.updateNewText(newText: newestChunkMsg)
                 self.messages.append(TPMessage(data: newestGPTMessage))
             }
         }

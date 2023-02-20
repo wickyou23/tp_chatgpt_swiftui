@@ -103,8 +103,9 @@ class TPGPTMessage: IMessage, Codable, Identifiable {
         var newText = newText
         newText.trimFirstNewLines()
         choice?.updateNewText(newText: newText)
-        text = newText
-//        print("[NEW TEXT]: ", newText)
+        DispatchQueue.main.async {
+            self.text = newText
+        }
     }
 }
 
@@ -142,8 +143,17 @@ struct TPGPTMessageDetails: Codable {
 struct TPMessage: Identifiable, Hashable {
     let id: String = UUID().uuidString
     var data: IMessage
+    
+    init(data: IMessage) {
+        self.data = data
+    }
+    
     var dataId: String {
         return data.id
+    }
+    
+    var isUser: Bool {
+        data.isUser
     }
     
     static func == (lhs: TPMessage, rhs: TPMessage) -> Bool {

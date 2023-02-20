@@ -8,6 +8,32 @@
 import Foundation
 import SwiftUI
 import Combine
+import Highlightr
+
+
+struct TPGPTHelper {
+    static var _shared = TPGPTHelper()
+    
+    private lazy var codeHighlightr = {
+        let instance = Highlightr()
+        instance?.setTheme(to: "paraiso-dark")
+        return instance
+    }()
+    
+    private lazy var mdHighlightr = {
+        let instance = Highlightr()
+        instance?.setTheme(to: "default")
+        return instance
+    }()
+    
+    static func handleCodeHighlightr(message: String) -> AttributedString {
+        return AttributedString(_shared.codeHighlightr?.highlight(message) ?? NSAttributedString(string: message))
+    }
+    
+    static func handleMarkdownHighlightr(message: String) -> AttributedString {
+        return AttributedString(_shared.mdHighlightr?.highlight(message, as: "md") ?? NSAttributedString(string: message))
+    }
+}
 
 extension String {
     mutating func trimFirstNewLines() {
@@ -63,6 +89,12 @@ extension View {
         self.modifier(MeasureSizeModifier())
             .onPreferenceChange(SizePreferenceKey.self, perform: action)
     }
+    
+    #if os(iOS)
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    #endif
 }
 
 #if os(iOS)

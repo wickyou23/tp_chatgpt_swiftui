@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct TPGPTApp: App {
-    @StateObject private var gptManager = TPGPTManager()
+    @StateObject private var gptManager = TPGPTManager.shared
     
     var body: some Scene {
         WindowGroup {
