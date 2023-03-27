@@ -119,20 +119,29 @@ struct TPGPTMessageDetails: Codable {
         case finishReason = "finish_reason"
         case index
         case text
+        case delta
+    }
+    
+    enum DeltaCodingKeys: CodingKey {
+        case content
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         finishReason = try container.decode(String?.self, forKey: .finishReason)
         index = try container.decode(Int.self, forKey: .index)
-        text = try container.decode(String.self, forKey: .text)
+        
+        let delta = try container.nestedContainer(keyedBy: DeltaCodingKeys.self, forKey: .delta)
+        text = (try? delta.decode(String.self, forKey: .content)) ?? ""
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(finishReason, forKey: .finishReason)
         try container.encode(index, forKey: .index)
-        try container.encode(text, forKey: .text)
+        
+        var delta = container.nestedContainer(keyedBy: DeltaCodingKeys.self, forKey: .delta)
+        try delta.encode(text, forKey: .content)
     }
     
     fileprivate mutating func updateNewText(newText: String) {

@@ -80,22 +80,23 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
     }
     
     private func _handleMessage(textMessage: String) {
-        //        debugPrint("_handleMessage [MESSAGE][\(textMessage.count)]: \(textMessage)")
+//        debugPrint("_handleMessage [MESSAGE][\(textMessage.count)]: \(textMessage)")
         
         var newMessageDatas = Array(cachingRenderedMessages)
         let nsmessage = NSString(string: textMessage)
         
-        var last4: String
-        if nsmessage.length < 4 {
-            last4 = textMessage
+        var last3: String
+        if nsmessage.length < 3 {
+            last3 = textMessage
         }
         else {
-            last4 = nsmessage.substring(with: NSRange(location: nsmessage.length - 4, length: 4))
+            last3 = nsmessage.substring(with: NSRange(location: nsmessage.length - 3, length: 3))
         }
         
-        if last4 == "````" {
+        ///the solution had predicated, please double check to response of new api
+        if last3 == "```" {
             if newMessageDatas.isEmpty {
-                debugPrint("[LAST 4][EMPTY]: \(last4)")
+                debugPrint("[LAST 3[EMPTY]: \(last3)")
                 newMessageDatas.append(TPMessageCellData(message: "",
                                                          type: .code,
                                                          startAt: nsmessage.length,
@@ -103,7 +104,7 @@ class TPMessageCellViewModel: NSObject, ObservableObject {
             }
             else {
                 let lastData = newMessageDatas.last!
-                debugPrint("[LAST 4][NOEMPTY][\(lastData.type)][\(lastData.message)]: \(last4)")
+                debugPrint("[LAST 3][NOEMPTY][\(lastData.type)][\(lastData.message)]: \(last3)")
                 if lastData.type == .plainText {
                     newMessageDatas.append(TPMessageCellData(message: "",
                                                              type: .code,

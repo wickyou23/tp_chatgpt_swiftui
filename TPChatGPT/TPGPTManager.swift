@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-private let API_KEY = "Bearer <API KEY>"
+private let API_KEY = "<API KEY>"
 private let DEFAULT_HEADER = ["Content-Type": "application/json", "Authorization": API_KEY]
 
 enum TPGPTManagerState {
@@ -73,20 +73,19 @@ class TPGPTManager: NSObject, ObservableObject {
     
     private func sendStreamMessageToGPT(prompt: String) {
         let bodyJS: [String: Any] = [
-            "model": "text-davinci-003",
-            "prompt": prompt,
+            "model": "gpt-3.5-turbo",
+            "messages": [["role": "user", "content": prompt]],
             "temperature": 0.7,
             "max_tokens": 2048,
             "stop": ["\n\n\n"],
-            "stream": true,
-            "suffix": "Note: if your answer has a snip code, let's put it in \"````\""
+            "stream": true
         ]
         
         guard let dataJS = try? JSONSerialization.data(withJSONObject: bodyJS) else {
             return
         }
         
-        var request = URLRequest(url: URL(string: "https://api.openai.com/v1/completions")!)
+        var request = URLRequest(url: URL(string: "https://api.openai.com/v1/chat/completions")!)
         request.httpMethod = "POST"
         request.httpBody = dataJS
         request.allHTTPHeaderFields = DEFAULT_HEADER
